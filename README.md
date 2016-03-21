@@ -2,7 +2,7 @@
 
 ScriptAggregator is a module to extend KairosDB aggregators using Javascript language (Java 8 Nashorn engine).
 
-Four aggregators where added :
+Four aggregators were added :
 
 - `jsfunction`
 - `jsfilter`
@@ -170,8 +170,8 @@ Instead of extracting subsets delimited by time (like `jsrange`), subsets are a 
 
 ```javascript
 /**
- * @param timestamps {Array} Horodatage des valeurs
- * @param values {Array} Valeurs
+ * @param timestamps {Array} Timestamp (Unix milliseconds) of the data point
+ * @param values {Array} Value of the datapoint
  * @return {Object} Resulting data point {"timestamp":Long,"value":Double}
 **/
 function fx(timestamps,values){
