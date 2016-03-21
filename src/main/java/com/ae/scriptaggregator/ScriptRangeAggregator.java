@@ -43,15 +43,14 @@ public class ScriptRangeAggregator extends RangeAggregator
 		return DataPoint.GROUP_NUMBER.equals(groupType);
 	}
 
-	@SuppressWarnings("unused")
-	private String function;
+	private String m_script;
 
-	public void setFunction(String function)
+	public void setFunction(String script)
 	{
-		this.function = function;
+		m_script = script;
 		
 		try {
-			engine.eval(function);
+			engine.eval(m_script);
 			invocable = (Invocable) engine;
 			
 		} catch (Exception e) {
@@ -63,10 +62,10 @@ public class ScriptRangeAggregator extends RangeAggregator
 	@Override
 	protected RangeSubAggregator getSubAggregator()
 	{
-		return (new PercentileDataPointAggregator());
+		return (new ScriptRangeDataPointAggregator());
 	}
 
-	private class PercentileDataPointAggregator implements RangeSubAggregator
+	private class ScriptRangeDataPointAggregator implements RangeSubAggregator
 	{
 
 		@Override

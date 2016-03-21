@@ -18,7 +18,7 @@ public class ScriptAggregatorModule extends CoreModule{
 	
 	@Override
 	protected void configure() {
-		bind(ScriptAggregator.class);
+		bind(ScriptFunctionAggregator.class);
 		bind(ScriptFilterAggregator.class);
 		bind(ScriptMovingAggregator.class);
 		bind(ScriptRangeAggregator.class);

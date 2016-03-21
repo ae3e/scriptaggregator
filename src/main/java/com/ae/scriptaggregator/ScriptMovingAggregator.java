@@ -2,6 +2,7 @@ package com.ae.scriptaggregator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -14,8 +15,7 @@ import org.kairosdb.core.aggregator.Aggregator;
 import org.kairosdb.core.aggregator.annotation.AggregatorName;
 import org.kairosdb.core.datapoints.DoubleDataPointFactory;
 import org.kairosdb.core.datastore.DataPointGroup;
-
-import com.ae.scriptaggregator.AggregatedDataPointGroupWrapper;
+import org.kairosdb.core.groupby.GroupByResult;
 
 import com.google.inject.Inject;
 
@@ -26,7 +26,7 @@ public class ScriptMovingAggregator implements Aggregator
 	private ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 	private Invocable invocable = null;
 	
-	private String m_function;
+	private String m_script;
 	
 	private int m_size;
 
@@ -39,7 +39,7 @@ public class ScriptMovingAggregator implements Aggregator
 	@Override
 	public DataPointGroup aggregate(DataPointGroup dataPointGroup)
 	{
-		return new JsMovingDataPointGroup(dataPointGroup);
+		return new ScriptMovingDataPointGroup(dataPointGroup);
 	}
 
 	@Override
@@ -53,11 +53,11 @@ public class ScriptMovingAggregator implements Aggregator
 		m_size = size;
 	}
 	
-	public void setFunction(String function)
+	public void setFunction(String script)
 	{
-		m_function = function;
+		m_script = script;
 		try {
-			engine.eval(m_function);
+			engine.eval(m_script);
 			invocable = (Invocable) engine;
 			
 		} catch (Exception e) {
@@ -66,32 +66,39 @@ public class ScriptMovingAggregator implements Aggregator
 		}
 	}
 	
-	private class JsMovingDataPointGroup extends AggregatedDataPointGroupWrapper
+	private class ScriptMovingDataPointGroup implements DataPointGroup
 	{
+		private DataPointGroup m_innerDataPointGroup;
+		ArrayList<DataPoint> subSet = new ArrayList<DataPoint>();
 
-		public JsMovingDataPointGroup(DataPointGroup innerDataPointGroup)
+		public ScriptMovingDataPointGroup(DataPointGroup innerDataPointGroup)
 		{
-			super(innerDataPointGroup,m_size);
-			//ArrayList in = (ArrayList) innerDataPointGroup;
+			m_innerDataPointGroup = innerDataPointGroup;
+
+			for(int i=0;i<m_size-1;i++){
+				if (innerDataPointGroup.hasNext()){
+					subSet.add(innerDataPointGroup.next());
+				}
+			}
 		}
 
 		@Override
 		public boolean hasNext()
 		{
-			return currentDataPoint != null && hasNextInternal();
+			return (m_innerDataPointGroup.hasNext());
 		}
 
 		@Override
 		public DataPoint next()
 		{
+			DataPoint dp = m_innerDataPointGroup.next();
 
-			if (hasNextInternal())
-			{
-				currentDataPoint = nextInternal();
-
+			subSet.add(dp);
+			if(subSet.size()>m_size){
+				subSet.remove(0);
 			}
-
-			DataPoint dp = m_dataPointFactory.createDataPoint(0,0);
+			
+			//DataPoint dptt = m_dataPointFactory.createDataPoint(0,0);
 			List<Double> listValues = new ArrayList<Double>();
 			List<Long> listDates = new ArrayList<Long>();
 
@@ -110,7 +117,44 @@ public class ScriptMovingAggregator implements Aggregator
 				e.printStackTrace();
 			}
 
-			return dp;
+			return (dp);
+		}
+
+		@Override
+		public void remove()
+		{
+			m_innerDataPointGroup.remove();
+		}
+
+		@Override
+		public String getName()
+		{
+			return (m_innerDataPointGroup.getName());
+		}
+
+		@Override
+		public List<GroupByResult> getGroupByResult()
+		{
+			return (m_innerDataPointGroup.getGroupByResult());
+		}
+
+
+		@Override
+		public void close()
+		{
+			m_innerDataPointGroup.close();
+		}
+
+		@Override
+		public Set<String> getTagNames()
+		{
+			return (m_innerDataPointGroup.getTagNames());
+		}
+
+		@Override
+		public Set<String> getTagValues(String tag)
+		{
+			return (m_innerDataPointGroup.getTagValues(tag));
 		}
 	}
 }

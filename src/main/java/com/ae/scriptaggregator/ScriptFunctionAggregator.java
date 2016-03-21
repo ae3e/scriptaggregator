@@ -19,18 +19,18 @@ import org.kairosdb.core.datastore.DataPointGroup;
 import org.kairosdb.core.groupby.GroupByResult;
 
 
-@AggregatorName(name = "js", description = "Apply javascript function to each data point.")
-public class ScriptAggregator implements Aggregator
+@AggregatorName(name = "jsfunction", description = "Apply javascript function to each data point.")
+public class ScriptFunctionAggregator implements Aggregator
 {
 	private DoubleDataPointFactory m_dataPointFactory;
 
 	private ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 	private Invocable invocable = null;
 	
-	private String m_function;
+	private String m_script;
 
 	@Inject
-	public ScriptAggregator (DoubleDataPointFactory dataPointFactory)
+	public ScriptFunctionAggregator (DoubleDataPointFactory dataPointFactory)
 	{
 		m_dataPointFactory = dataPointFactory;
 	}
@@ -45,14 +45,14 @@ public class ScriptAggregator implements Aggregator
 	public DataPointGroup aggregate(DataPointGroup dataPointGroup)
 	{
 		//checkState(m_function != 0.0);
-		return new JsDataPointGroup(dataPointGroup);
+		return new ScriptDataPointGroup(dataPointGroup);
 	}
 
-	public void setFunction(String function)
+	public void setFunction(String script)
 	{
-		m_function = function;
+		m_script = script;
 		try {
-			engine.eval(m_function);
+			engine.eval(m_script);
 			invocable = (Invocable) engine;
 			
 		} catch (Exception e) {
@@ -61,13 +61,13 @@ public class ScriptAggregator implements Aggregator
 		}
 	}
 
-	public class JsDataPointGroup implements DataPointGroup
+	public class ScriptDataPointGroup implements DataPointGroup
 	{
 		private DataPointGroup m_innerDataPointGroup;
 		
 		
 
-		public JsDataPointGroup(DataPointGroup innerDataPointGroup)
+		public ScriptDataPointGroup(DataPointGroup innerDataPointGroup)
 		{
 			m_innerDataPointGroup = innerDataPointGroup;
 			

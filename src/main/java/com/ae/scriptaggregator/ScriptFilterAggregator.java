@@ -28,7 +28,7 @@ public class ScriptFilterAggregator implements Aggregator
 	private ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 	private Invocable invocable = null;
 	
-	private String m_function;
+	private String m_script;
 
 	@Inject
 	public ScriptFilterAggregator (DoubleDataPointFactory dataPointFactory)
@@ -46,14 +46,14 @@ public class ScriptFilterAggregator implements Aggregator
 	public DataPointGroup aggregate(DataPointGroup dataPointGroup)
 	{
 		checkNotNull(dataPointGroup);		
-		return new JsFilteringDataPointGroup(dataPointGroup);
+		return new ScriptFilterDataPointGroup(dataPointGroup);
 	}
 
-	public void setFunction(String function)
+	public void setFunction(String script)
 	{
-		m_function = function;
+		m_script = script;
 		try {
-			engine.eval(m_function);
+			engine.eval(m_script);
 			invocable = (Invocable) engine;
 			
 		} catch (Exception e) {
@@ -62,12 +62,12 @@ public class ScriptFilterAggregator implements Aggregator
 		}
 	}
 
-	private class JsFilteringDataPointGroup  implements DataPointGroup
+	private class ScriptFilterDataPointGroup  implements DataPointGroup
 	{
 		private DataPointGroup m_innerDataPointGroup;
 		private DataPoint nextPoint;
 		
-		public JsFilteringDataPointGroup(DataPointGroup innerDataPointGroup)
+		public ScriptFilterDataPointGroup(DataPointGroup innerDataPointGroup)
 		{
 			m_innerDataPointGroup = innerDataPointGroup;
 			nextPoint = null;
