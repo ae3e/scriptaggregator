@@ -12,7 +12,7 @@
   	<dependency>
   		<groupId>org.kairosdb</groupId>
   		<artifactId>kairosdb</artifactId>
-  		<version>1.0.0-1</version>
+  		<version>1.2.1-1</version>
   	</dependency>
   	
   </dependencies>

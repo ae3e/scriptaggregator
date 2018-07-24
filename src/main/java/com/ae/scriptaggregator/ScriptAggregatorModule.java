@@ -22,6 +22,5 @@ public class ScriptAggregatorModule extends CoreModule{
 		bind(ScriptFilterAggregator.class);
 		bind(ScriptMovingAggregator.class);
 		bind(ScriptRangeAggregator.class);
-		
 	}
 }

@@ -35,8 +35,8 @@ Applies a JS function to each value.
 ```javascript
 /**
  * @param timestamp {Long} Timestamp (Unix milliseconds) of the data point
- * @param value {Double} Value of the datapoint
- * @return {object} Resulting data point {"timestamp":Long,"value":Double}
+ * @param value {Double||Long||String} Value of the datapoint
+ * @return {object} Resulting data point {"timestamp":Long,"value":Double||Long||String}
 **/
 function fx(timestamp,value){
         var result = {};
@@ -82,7 +82,7 @@ function fx(timestamp,value){
             return false;
     }*/
 
-    //Filter ldata on a specific range
+    //Filter data on a specific range
     if(timestamp<(new Date().getTime()-1000*60*60*8) && timestamp>(new Date().getTime()-1000*60*60*20)){
             return true;
     }else{
@@ -110,7 +110,7 @@ Applies a JS function to each data group defined by a sampling period.
 /**
  * @param timestamps {Array} Array of timestamps (Unix milliseconds) of the data points
  * @param values {Array} Array of values of data points
- * @return {Object} Resulting data point {"timestamp":Long,"value":Double}
+ * @return {Object} Resulting data point {"timestamp":Long,"value":Double||Long||String}
 **/
 function fx(timestamps,values){
         

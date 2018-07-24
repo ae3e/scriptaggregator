@@ -8,26 +8,37 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
-
 import org.kairosdb.core.DataPoint;
-import org.kairosdb.core.aggregator.Aggregator;
-import org.kairosdb.core.aggregator.annotation.AggregatorName;
+import org.kairosdb.core.annotation.FeatureComponent;
+import org.kairosdb.core.annotation.FeatureProperty;
 import org.kairosdb.core.datapoints.DoubleDataPointFactory;
 import org.kairosdb.core.datastore.DataPointGroup;
 import org.kairosdb.core.groupby.GroupByResult;
+import org.kairosdb.plugin.Aggregator;
 
 import com.google.inject.Inject;
 
-@AggregatorName(name = "jsmoving", description = "Apply javascript function on successive data points.")
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
+
+@FeatureComponent(name = "jsmoving", description = "Apply javascript function on successive data points.")
 public class ScriptMovingAggregator implements Aggregator
 {
+	
+	
 	private DoubleDataPointFactory m_dataPointFactory;
 	private ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 	private Invocable invocable = null;
 	
+	@FeatureProperty(
+			label = "Function",
+			description = "todo"
+	)
 	private String m_script;
 	
+	@FeatureProperty(
+			label = "Size",
+			description = "todo"
+	)
 	private int m_size;
 
 	@Inject
@@ -42,6 +53,12 @@ public class ScriptMovingAggregator implements Aggregator
 		return new ScriptMovingDataPointGroup(dataPointGroup);
 	}
 
+	@Override
+	public String getAggregatedGroupType(String groupType)
+	{
+		return m_dataPointFactory.getGroupType();
+	}
+	
 	@Override
 	public boolean canAggregate(String groupType)
 	{

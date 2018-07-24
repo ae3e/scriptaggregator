@@ -1,7 +1,5 @@
 package com.ae.scriptaggregator;
 
-import com.google.inject.Inject;
-
 import java.util.List;
 import java.util.Set;
 
@@ -9,43 +7,57 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
-
 import org.kairosdb.core.DataPoint;
-import org.kairosdb.core.aggregator.Aggregator;
-import org.kairosdb.core.aggregator.annotation.AggregatorName;
-import org.kairosdb.core.datapoints.DoubleDataPointFactory;
+import org.kairosdb.core.annotation.FeatureComponent;
+import org.kairosdb.core.annotation.FeatureProperty;
+import org.kairosdb.core.datapoints.DoubleDataPoint;
+import org.kairosdb.core.datapoints.LongDataPoint;
+import org.kairosdb.core.datapoints.StringDataPoint;
 import org.kairosdb.core.datastore.DataPointGroup;
 import org.kairosdb.core.groupby.GroupByResult;
+import org.kairosdb.plugin.Aggregator;
+
+import com.google.inject.Inject;
+
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 
-@AggregatorName(name = "jsfunction", description = "Apply javascript function to each data point.")
+@FeatureComponent(name = "jsfunction", description = "Apply javascript function to each data point.")
 public class ScriptFunctionAggregator implements Aggregator
 {
-	private DoubleDataPointFactory m_dataPointFactory;
+	
 
 	private ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 	private Invocable invocable = null;
 	
+	@FeatureProperty(
+			label = "Function",
+			description = "todo"
+	)
 	private String m_script;
 
 	@Inject
-	public ScriptFunctionAggregator (DoubleDataPointFactory dataPointFactory)
+	public ScriptFunctionAggregator ()
 	{
-		m_dataPointFactory = dataPointFactory;
 	}
 
 	@Override
+	public String getAggregatedGroupType(String groupType)
+	{
+		return groupType;
+	}
+	
+	@Override
 	public boolean canAggregate(String groupType)
 	{
-		return DataPoint.GROUP_NUMBER.equals(groupType);
+		return true;//DataPoint.GROUP_NUMBER.equals(groupType);
 	}
 
 	@Override
 	public DataPointGroup aggregate(DataPointGroup dataPointGroup)
 	{
 		//checkState(m_function != 0.0);
-		return new ScriptDataPointGroup(dataPointGroup);
+		return new ScriptSDataPointGroup(dataPointGroup);
 	}
 
 	public void setFunction(String script)
@@ -61,13 +73,13 @@ public class ScriptFunctionAggregator implements Aggregator
 		}
 	}
 
-	public class ScriptDataPointGroup implements DataPointGroup
+	public class ScriptSDataPointGroup implements DataPointGroup
 	{
 		private DataPointGroup m_innerDataPointGroup;
 		
 		
 
-		public ScriptDataPointGroup(DataPointGroup innerDataPointGroup)
+		public ScriptSDataPointGroup(DataPointGroup innerDataPointGroup)
 		{
 			m_innerDataPointGroup = innerDataPointGroup;
 			
@@ -84,11 +96,31 @@ public class ScriptFunctionAggregator implements Aggregator
 		{
 			DataPoint dp = m_innerDataPointGroup.next();
 			
+			Object value = null;
 			
 			try {
+
+				if(!dp.isDouble() && !dp.isLong()) {
+					StringDataPoint sdp = (StringDataPoint) dp;
+					value = sdp.getValue();
+				}else if(dp.isDouble()){
+					DoubleDataPoint ddp = (DoubleDataPoint) dp;
+					value = ddp.getDoubleValue();
+				}else if(dp.isLong()){
+					LongDataPoint ddp = (LongDataPoint) dp;
+					value = ddp.getLongValue();
+				}
+
+				ScriptObjectMirror mirror = (ScriptObjectMirror) invocable.invokeFunction("fx", dp.getTimestamp(),value);
+				Object result = mirror.getMember("value");
 				
-				ScriptObjectMirror mirror = (ScriptObjectMirror) invocable.invokeFunction("fx", dp.getTimestamp(),dp.getDoubleValue());
-				dp = m_dataPointFactory.createDataPoint(Long.valueOf(mirror.getMember("timestamp").toString()), (Double) mirror.getMember("value"));
+				if(result instanceof Double) {
+					dp = new DoubleDataPoint(Long.valueOf(mirror.getMember("timestamp").toString()), (Double) mirror.getMember("value"));
+				}else if(result instanceof Integer) {
+					dp = new LongDataPoint(Long.valueOf(mirror.getMember("timestamp").toString()), (Integer) mirror.getMember("value"));
+				}else if(result instanceof String) {
+					dp = new StringDataPoint(Long.valueOf(mirror.getMember("timestamp").toString()), (String) mirror.getMember("value"));
+				}
 				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block

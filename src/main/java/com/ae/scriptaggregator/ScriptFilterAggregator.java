@@ -1,5 +1,7 @@
 package com.ae.scriptaggregator;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.List;
 import java.util.Set;
 
@@ -7,27 +9,32 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.kairosdb.core.DataPoint;
-import org.kairosdb.core.aggregator.Aggregator;
-import org.kairosdb.core.aggregator.annotation.AggregatorName;
+import org.kairosdb.core.annotation.FeatureComponent;
+import org.kairosdb.core.annotation.FeatureProperty;
 import org.kairosdb.core.datapoints.DoubleDataPointFactory;
 import org.kairosdb.core.datastore.DataPointGroup;
 import org.kairosdb.core.groupby.GroupByResult;
+import org.kairosdb.plugin.Aggregator;
 
 import com.google.inject.Inject;
 
 
-@AggregatorName(name = "jsfilter", description = "Apply javascript function to each data point.")
+@FeatureComponent(name = "jsfilter", description = "Apply javascript function to each data point.")
 public class ScriptFilterAggregator implements Aggregator
 {
+	
+	
 	@SuppressWarnings("unused")
 	private DoubleDataPointFactory m_dataPointFactory;
 
 	private ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
 	private Invocable invocable = null;
 	
+	@FeatureProperty(
+			label = "Function",
+			description = "todo"
+	)
 	private String m_script;
 
 	@Inject
@@ -42,6 +49,12 @@ public class ScriptFilterAggregator implements Aggregator
 		return DataPoint.GROUP_NUMBER.equals(groupType);
 	}
 
+	@Override
+	public String getAggregatedGroupType(String groupType)
+	{
+		return m_dataPointFactory.getGroupType();
+	}
+	
 	@Override
 	public DataPointGroup aggregate(DataPointGroup dataPointGroup)
 	{
