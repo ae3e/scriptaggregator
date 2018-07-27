@@ -30,14 +30,14 @@ public class ScriptMovingAggregator implements Aggregator
 	private Invocable invocable = null;
 	
 	@FeatureProperty(
-			label = "Function",
-			description = "todo"
+			label = "script",
+			description = "The script applied to each range"
 	)
 	private String m_script;
 	
 	@FeatureProperty(
-			label = "Size",
-			description = "todo"
+			label = "size",
+			description = "The number of values in each range"
 	)
 	private int m_size;
 
@@ -70,7 +70,7 @@ public class ScriptMovingAggregator implements Aggregator
 		m_size = size;
 	}
 	
-	public void setFunction(String script)
+	public void setScript(String script)
 	{
 		m_script = script;
 		try {

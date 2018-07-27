@@ -31,8 +31,8 @@ public class ScriptFunctionAggregator implements Aggregator
 	private Invocable invocable = null;
 	
 	@FeatureProperty(
-			label = "Function",
-			description = "todo"
+			label = "script",
+			description = "The script applied to each value"
 	)
 	private String m_script;
 
@@ -60,7 +60,7 @@ public class ScriptFunctionAggregator implements Aggregator
 		return new ScriptSDataPointGroup(dataPointGroup);
 	}
 
-	public void setFunction(String script)
+	public void setScript(String script)
 	{
 		m_script = script;
 		try {

@@ -15,7 +15,6 @@ import org.kairosdb.core.aggregator.RangeAggregator;
 import org.kairosdb.core.annotation.FeatureComponent;
 import org.kairosdb.core.annotation.FeatureProperty;
 import org.kairosdb.core.datapoints.DoubleDataPoint;
-import org.kairosdb.core.datapoints.DoubleDataPointFactory;
 import org.kairosdb.core.datapoints.LongDataPoint;
 import org.kairosdb.core.datapoints.StringDataPoint;
 import org.slf4j.Logger;
@@ -51,12 +50,12 @@ public class ScriptRangeAggregator extends RangeAggregator
 	}
 	
 	@FeatureProperty(
-			label = "Function",
-			description = "todo"
+			label = "script",
+			description = "The script applied to each range"
 	)
 	private String m_script;
 
-	public void setFunction(String script)
+	public void setScript(String script)
 	{
 		m_script = script;
 		
