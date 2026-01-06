@@ -7,7 +7,7 @@ import java.util.Set;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
+import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 import org.kairosdb.core.DataPoint;
 import org.kairosdb.core.annotation.FeatureComponent;
@@ -24,11 +24,10 @@ import com.google.inject.Inject;
 public class ScriptFilterAggregator implements Aggregator
 {
 	
-	
 	@SuppressWarnings("unused")
 	private DoubleDataPointFactory m_dataPointFactory;
 
-	private ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+	private ScriptEngine engine = new NashornScriptEngineFactory().getScriptEngine();
 	private Invocable invocable = null;
 	
 	@FeatureProperty(
@@ -62,6 +61,12 @@ public class ScriptFilterAggregator implements Aggregator
 		return new ScriptFilterDataPointGroup(dataPointGroup);
 	}
 
+	@Override
+	public void init()
+	{
+
+	}
+	
 	public void setScript(String script)
 	{
 		m_script = script;
@@ -147,6 +152,12 @@ public class ScriptFilterAggregator implements Aggregator
 			return (m_innerDataPointGroup.getTagValues(tag));
 		}
 		
+		@Override
+        public String getAlias()
+        {
+            return m_innerDataPointGroup.getAlias();
+        }
+
 		private boolean invokeFunction(DataPoint dp) {
 			boolean returnVal =  false;
 			try {

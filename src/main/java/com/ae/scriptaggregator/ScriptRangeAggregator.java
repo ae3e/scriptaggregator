@@ -7,7 +7,8 @@ import java.util.List;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
+import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
+import org.openjdk.nashorn.api.scripting.ScriptObjectMirror;
 
 import org.kairosdb.core.DataPoint;
 import org.kairosdb.core.aggregator.PercentileAggregator;
@@ -22,14 +23,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
-
 @FeatureComponent(name = "jsrange", description = "Apply a javascript function on a range of data points")
 public class ScriptRangeAggregator extends RangeAggregator
 {
 	public static final Logger logger = LoggerFactory.getLogger(PercentileAggregator.class);
 	
-	private ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+	private ScriptEngine engine = new NashornScriptEngineFactory().getScriptEngine();
 	private Invocable invocable = null;
 
 	@Inject
@@ -69,6 +68,12 @@ public class ScriptRangeAggregator extends RangeAggregator
 		}
 	}
 
+	@Override
+	public void init()
+	{
+
+	}
+	
 	@Override
 	protected RangeSubAggregator getSubAggregator()
 	{

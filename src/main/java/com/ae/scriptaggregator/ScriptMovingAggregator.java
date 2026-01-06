@@ -6,7 +6,8 @@ import java.util.Set;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
+import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
+import org.openjdk.nashorn.api.scripting.ScriptObjectMirror;
 
 import org.kairosdb.core.DataPoint;
 import org.kairosdb.core.annotation.FeatureComponent;
@@ -18,15 +19,12 @@ import org.kairosdb.plugin.Aggregator;
 
 import com.google.inject.Inject;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
-
 @FeatureComponent(name = "jsmoving", description = "Apply javascript function on successive data points.")
 public class ScriptMovingAggregator implements Aggregator
 {
 	
-	
 	private DoubleDataPointFactory m_dataPointFactory;
-	private ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+	private ScriptEngine engine = new NashornScriptEngineFactory().getScriptEngine();
 	private Invocable invocable = null;
 	
 	@FeatureProperty(
@@ -81,6 +79,12 @@ public class ScriptMovingAggregator implements Aggregator
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public void init()
+	{
+
 	}
 	
 	private class ScriptMovingDataPointGroup implements DataPointGroup
@@ -173,5 +177,11 @@ public class ScriptMovingAggregator implements Aggregator
 		{
 			return (m_innerDataPointGroup.getTagValues(tag));
 		}
+
+		@Override
+        public String getAlias()
+        {
+            return m_innerDataPointGroup.getAlias();
+        }
 	}
 }

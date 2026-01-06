@@ -5,7 +5,8 @@ import java.util.Set;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
+import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
+import org.openjdk.nashorn.api.scripting.ScriptObjectMirror;
 
 import org.kairosdb.core.DataPoint;
 import org.kairosdb.core.annotation.FeatureComponent;
@@ -19,16 +20,13 @@ import org.kairosdb.plugin.Aggregator;
 
 import com.google.inject.Inject;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
-
-
 @FeatureComponent(name = "jsfunction", description = "Apply javascript function to each data point.")
 public class ScriptFunctionAggregator implements Aggregator
 {
-	
 
-	private ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+	private ScriptEngine engine = new NashornScriptEngineFactory().getScriptEngine();
 	private Invocable invocable = null;
+	
 	
 	@FeatureProperty(
 			label = "script",
@@ -63,6 +61,8 @@ public class ScriptFunctionAggregator implements Aggregator
 	public void setScript(String script)
 	{
 		m_script = script;
+		/*System.out.println("ASM Handle loaded from: " +
+  org.objectweb.asm.Handle.class.getProtectionDomain().getCodeSource().getLocation());*/
 		try {
 			engine.eval(m_script);
 			invocable = (Invocable) engine;
@@ -71,6 +71,12 @@ public class ScriptFunctionAggregator implements Aggregator
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void init()
+	{
+
 	}
 
 	public class ScriptSDataPointGroup implements DataPointGroup
@@ -103,12 +109,12 @@ public class ScriptFunctionAggregator implements Aggregator
 				if(!dp.isDouble() && !dp.isLong()) {
 					StringDataPoint sdp = (StringDataPoint) dp;
 					value = sdp.getValue();
-				}else if(dp.isDouble()){
-					DoubleDataPoint ddp = (DoubleDataPoint) dp;
-					value = ddp.getDoubleValue();
 				}else if(dp.isLong()){
 					LongDataPoint ddp = (LongDataPoint) dp;
 					value = ddp.getLongValue();
+				}else if(dp.isDouble()){
+					DoubleDataPoint ddp = (DoubleDataPoint) dp;
+					value = ddp.getDoubleValue();
 				}
 
 				ScriptObjectMirror mirror = (ScriptObjectMirror) invocable.invokeFunction("fx", dp.getTimestamp(),value);
@@ -166,6 +172,12 @@ public class ScriptFunctionAggregator implements Aggregator
 		{
 			return (m_innerDataPointGroup.getTagValues(tag));
 		}
+
+		@Override
+        public String getAlias()
+        {
+            return m_innerDataPointGroup.getAlias();
+        }
 	}
 }
 
