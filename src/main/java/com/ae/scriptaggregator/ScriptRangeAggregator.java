@@ -67,12 +67,6 @@ public class ScriptRangeAggregator extends RangeAggregator
 			e.printStackTrace();
 		}
 	}
-
-	@Override
-	public void init()
-	{
-
-	}
 	
 	@Override
 	protected RangeSubAggregator getSubAggregator()
